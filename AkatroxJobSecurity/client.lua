@@ -5,20 +5,25 @@ CreateThread(function()
         local player = PlayerPedId()
         local veh = GetVehiclePedIsIn(player, false)
 
-        if veh ~= 0 and GetPedInVehicleSeat(veh, -1) == player then
+        if veh ~= 0 and GetPedInVehicleSeat(veh, -1) == player then 
             local vehModel = GetEntityModel(veh)
             local vehName = GetDisplayNameFromVehicleModel(vehModel):lower()
             local PlayerData = QBCore.Functions.GetPlayerData()
             local jobName = PlayerData.job and PlayerData.job.name
+            local isAdmin = PlayerData.permission == "admin" or PlayerData.permission == "god"
 
-            if jobName and Config.RestrictedVehicles[jobName] then
-                if not has_value(Config.RestrictedVehicles[jobName], vehName) then
+            if isAdmin then
+                QBCore.Functions.Notify("Admin olduğunuz için bu aracı kullanabiliyorsunuz.", "success")
+            else
+                if jobName and Config.RestrictedVehicles[jobName] then
+                    if not has_value(Config.RestrictedVehicles[jobName], vehName) then
+                        QBCore.Functions.Notify("Bu aracı sürme yetkiniz yok.", "error")
+                        TaskLeaveVehicle(player, veh, 16) -- Oyuncuyu araçtan çıkar
+                    end
+                elseif Config.RestrictedVehicles["police"] and has_value(Config.RestrictedVehicles["police"], vehName) then
                     QBCore.Functions.Notify("Bu aracı sürme yetkiniz yok.", "error")
-                    TaskLeaveVehicle(player, veh, 16) -- Oyuncuyu araçtan çıkar
+                    TaskLeaveVehicle(player, veh, 16)
                 end
-            elseif Config.RestrictedVehicles["police"] and has_value(Config.RestrictedVehicles["police"], vehName) then
-                QBCore.Functions.Notify("Bu aracı sürme yetkiniz yok.", "error")
-                TaskLeaveVehicle(player, veh, 16)
             end
         end
         Wait(1000) -- 1 saniye bekletme
@@ -31,18 +36,24 @@ CreateThread(function()
         local weapon = GetSelectedPedWeapon(player)
         local PlayerData = QBCore.Functions.GetPlayerData()
         local jobName = PlayerData.job and PlayerData.job.name
+        local isAdmin = PlayerData.permission == "admin" or PlayerData.permission == "god"
 
         for restrictedWeapon, allowedJobs in pairs(Config.RestrictedItems.weapons) do
             if GetHashKey(restrictedWeapon) == weapon then
-                if jobName and not has_job(allowedJobs, jobName) then
-                    RemoveWeaponFromPed(player, weapon)
-                    QBCore.Functions.Notify("Bu silahı çekme yetkiniz yok.", "error")
+                if isAdmin then
+                    QBCore.Functions.Notify("Admin olduğunuz için bu silahı çekebiliyorsunuz.", "success")
+                else
+                    if jobName and not has_job(allowedJobs, jobName) then
+                        RemoveWeaponFromPed(player, weapon)
+                        QBCore.Functions.Notify("Bu silahı çekme yetkiniz yok.", "error")
+                    end
                 end
             end
         end
         Wait(500)
     end
 end)
+
 
 function has_job(jobList, job)
     for _, v in ipairs(jobList) do
@@ -52,6 +63,7 @@ function has_job(jobList, job)
     end
     return false
 end
+
 
 function has_value(tab, val)
     for _, value in ipairs(tab) do
