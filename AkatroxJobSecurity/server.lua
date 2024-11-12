@@ -1,6 +1,5 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
--- Belirli bir eşyanın sadece belirli meslekler tarafından kullanılmasına izin verir
 for itemName, jobs in pairs(Config.RestrictedItems.weapons) do
     QBCore.Functions.CreateUseableItem(itemName, function(source)
         local Player = QBCore.Functions.GetPlayer(source)
@@ -12,7 +11,6 @@ for itemName, jobs in pairs(Config.RestrictedItems.weapons) do
     end)
 end
 
--- Mermi sınırlamaları
 for ammoName, jobs in pairs(Config.RestrictedItems.ammo) do
     QBCore.Functions.CreateUseableItem(ammoName, function(source)
         local Player = QBCore.Functions.GetPlayer(source)
@@ -24,7 +22,6 @@ for ammoName, jobs in pairs(Config.RestrictedItems.ammo) do
     end)
 end
 
--- Meslek doğrulama fonksiyonu
 function has_job(jobList, job)
     for _, v in ipairs(jobList) do
         if v == job then
